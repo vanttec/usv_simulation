@@ -53,16 +53,6 @@ void left_callback(const std_msgs::Float64::ConstPtr& left)
 	Tport = left->data;
 }
 
-/*void ins_callback(const geometry_msgs::Pose2D::ConstPtr& ins)
-{
-	theta = ins->theta;
-}
-
-void vel_callback(const geometry_msgs::Vector3::ConstPtr& vel)
-{
-	r = vel->z;
-}*/
-
 int main(int argc, char *argv[])
 {
 
@@ -70,20 +60,17 @@ int main(int argc, char *argv[])
 
   	ros::NodeHandle n;
 
-	//tf2::TransformBroadcaster broadcaster;
-	//tf2::Quaternion myQuaternion;
+	tf2::Quaternion myQuaternion;
 
 	//ROS Publishers for each required simulated ins_2d data
 	//ros::Publisher dm_pos_pub = n.advertise<geometry_msgs::Pose2D>("/vectornav/ins_2d/ins_pose", 1000);
-	ros::Publisher local_pos_pub = n.advertise<geometry_msgs::Pose2D>("/vectornav/ins_2d/NED_pose", 1000);
-	ros::Publisher dm_vel_pub = n.advertise<geometry_msgs::Vector3>("/vectornav/ins_2d/local_vel", 1000);
-	//ros::Publisher boat_odom_pub = n.advertise<nav_msgs::Odometry>("/usv_simulation/boat_model/odom", 1000);
+	//ros::Publisher local_pos_pub = n.advertise<geometry_msgs::Pose2D>("/vectornav/ins_2d/NED_pose", 1000);
+	//ros::Publisher dm_vel_pub = n.advertise<geometry_msgs::Vector3>("/vectornav/ins_2d/local_vel", 1000);
+	ros::Publisher boat_odom_pub = n.advertise<nav_msgs::Odometry>("/usv_simulation/boat_model/odom", 1000);
 
 	ros::Subscriber right_thruster_sub = n.subscribe("/usv_control/controller/right_thruster", 1000, right_callback);
 	ros::Subscriber left_thruster_sub = n.subscribe("/usv_control/controller/left_thruster", 1000, left_callback);
-	//ros::Subscriber ins_pose_sub = n.subscribe("ins_pose", 1000, ins_callback);
-	//ros::Subscriber local_vel_sub = n.subscribe("local_vel", 1000, vel_callback);
-
+	
 	ros::Rate loop_rate(rate);
 
 Vector3f upsilon; //vector upsilon = [u v r] (3 DOF local reference frame)
@@ -100,9 +87,9 @@ eta_dot_last << 0, 0, 0;
 
   while (ros::ok())
   {
-    geometry_msgs::Pose2D dm_pose; //inertial navigation system pose (latitude, longitude, yaw)
-    geometry_msgs::Vector3 dm_vel;
-	//nav_msgs::Odometry odom;
+    //geometry_msgs::Pose2D dm_pose; //inertial navigation system pose (latitude, longitude, yaw)
+    //geometry_msgs::Vector3 dm_vel;
+	nav_msgs::Odometry odom;
 
   	Xu = -25;
   	Xuu = 0;
@@ -152,7 +139,6 @@ eta_dot_last << 0, 0, 0;
 
 	Vector3f upsilon_dot =  M.inverse()*(T - C * upsilon - D * upsilon);
 	upsilon = (integral_step) * (upsilon_dot + upsilon_dot_last)/2 + upsilon; //integral
-	//upsilon(2) = r;
 	upsilon_dot_last = upsilon_dot;
 
 	Matrix3f J; //matrix of transformation between reference frames
@@ -170,39 +156,39 @@ eta_dot_last << 0, 0, 0;
 	if (abs(etheta) > 3.141592){
 		etheta = (etheta/abs(etheta))*(abs(etheta)-2*3.141592);
 	}
-	dm_pose.x = x;
-	dm_pose.y = y;
-	dm_pose.theta = etheta;
-	//odom.pose.pose.position.x = x;
-	//odom.pose.pose.position.y = y;
-	//odom.pose.pose.position.z = 0;
+	//dm_pose.x = x;
+	//dm_pose.y = y;
+	//dm_pose.theta = etheta;
+	odom.pose.pose.position.x = x;
+	odom.pose.pose.position.y = y;
+	odom.pose.pose.position.z = 0;
 
-	/*myQuaternion.setRPY(0,0,etheta);
+	myQuaternion.setRPY(0,0,etheta);
 
 	odom.pose.pose.orientation.x = myQuaternion[0];
 	odom.pose.pose.orientation.y = myQuaternion[1];
 	odom.pose.pose.orientation.z = myQuaternion[2];
-	odom.pose.pose.orientation.w = myQuaternion[3];*/
+	odom.pose.pose.orientation.w = myQuaternion[3];
 
 	float u = upsilon(0); //surge velocity
 	float v = upsilon(1); //sway velocity
 	float r = upsilon(2); //yaw rate
-	dm_vel.x = u;
-	dm_vel.y = v;
-	dm_vel.z = r;
-	/*odom.twist.twist.linear.x = u;
+	//dm_vel.x = u;
+	//dm_vel.y = v;
+	//dm_vel.z = r;
+	odom.twist.twist.linear.x = u;
 	odom.twist.twist.linear.y = v;
 	odom.twist.twist.linear.z = 0;
 
 	odom.twist.twist.angular.x = 0;
 	odom.twist.twist.angular.y = 0;
-	odom.twist.twist.angular.z = r;*/
+	odom.twist.twist.angular.z = r;
 
 //Data publishing
     //dm_pos_pub.publish(dm_pose);
-    dm_vel_pub.publish(dm_vel);
-    local_pos_pub.publish(dm_pose);
-	//boat_odom_pub.publish(odom);
+    //dm_vel_pub.publish(dm_vel);
+    //local_pos_pub.publish(dm_pose);
+	boat_odom_pub.publish(odom);
 
     ros::spinOnce();
 

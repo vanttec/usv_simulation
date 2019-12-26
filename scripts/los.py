@@ -45,28 +45,28 @@ class Test:
         #rospy.Subscriber("/vectornav/ins_2d/NED_pose", Pose2D, self.gps_callback)
         #rospy.Subscriber("/vectornav/ins_2d/ins_ref", Vector3, self.gpsref_callback)
         rospy.Subscriber("/mission/waypoints", Float32MultiArray, self.waypoints_callback)
-        rospy.Subscriber("/vectornav/ins_2d/NED_pose", Pose2D, self.gps_callback)
+        rospy.Subscriber("/usv_simulation/boat_model/odom", Odometry, self.odom_callback)
 
         self.d_speed_pub = rospy.Publisher("/guidance/desired_speed", Float64, queue_size=10)
         self.d_heading_pub = rospy.Publisher("/guidance/desired_heading", Float64, queue_size=10)
         self.target_pub = rospy.Publisher("/usv_control/los/target", Pose2D, queue_size=10)
         self.LOS_pub = rospy.Publisher("/usv_control/los/los", Pose2D, queue_size=10)
 
-    '''def odom_callback(self, gps):
+    def odom_callback(self, gps):
         self.NEDx = gps.pose.pose.position.x
         self.NEDy = gps.pose.pose.position.y
         q = gps.pose.pose.orientation
         q = [q.x, q.y, q.z, q.w]
-        (roll, pitch, self.yaw) = euler_from_quaternion(q)'''
+        (roll, pitch, self.yaw) = euler_from_quaternion(q)
 
     '''def gpsref_callback(self, gps):
         self.latref = gps.x
         self.lonref = gps.y'''
 
-    def gps_callback(self, gps):
+    '''def gps_callback(self, gps):
         self.NEDx = gps.x
         self.NEDy = gps.y
-        self.yaw = gps.theta
+        self.yaw = gps.theta'''
 
     def waypoints_callback(self, msg):
         wp = []

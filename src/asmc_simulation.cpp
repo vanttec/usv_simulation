@@ -20,9 +20,9 @@ float Tstbd = 0;
 float Tport = 0;
 
 //Sensor feedback
-//double theta = 0;
-//double phi = 0;
-//double psi_q = 0;
+double theta = 0;
+double phi = 0;
+double psi_q = 0;
 float psi = 0;
 float u = 0;
 float v = 0;
@@ -39,16 +39,8 @@ float u_d = 0;
 float psi_d = 0;
 
 //Auxiliry variables
-//float u_line = 0;
-//float u_last = 0;
-//float u_d_line = 0;
-//float u_d_last = 0;
 float e_u_int = 0;
 float e_u_last = 0;
-//float e_psi_int = 0;
-//float e_psi_last = 0;
-
-//float u_d_dot = 0; surge speed derivative, not necessary
 
 void dspeed_callback(const std_msgs::Float64::ConstPtr& ud)
 {
@@ -60,7 +52,7 @@ void dheading_callback(const std_msgs::Float64::ConstPtr& psid)
   psi_d = psid->data;
 }
 
-void ins_callback(const geometry_msgs::Pose2D::ConstPtr& ins)
+/*void ins_callback(const geometry_msgs::Pose2D::ConstPtr& ins)
 {
   psi = ins->theta;
 }
@@ -70,9 +62,9 @@ void vel_callback(const geometry_msgs::Vector3::ConstPtr& vel)
   u = vel->x;
   v = vel->y; 
   r = vel->z;
-}
+}*/
 
-/*void odom_callback(const nav_msgs::Odometry::ConstPtr& odom)
+void odom_callback(const nav_msgs::Odometry::ConstPtr& odom)
 {
   float q0 = odom->pose.pose.orientation.x;
   float q1 = odom->pose.pose.orientation.y;
@@ -85,7 +77,7 @@ void vel_callback(const geometry_msgs::Vector3::ConstPtr& vel)
   u = odom->twist.twist.linear.x;
   v = odom->twist.twist.linear.y; 
   r = odom->twist.twist.angular.z;
-}*/
+}
 
 int main(int argc, char *argv[])
 {
@@ -106,9 +98,9 @@ int main(int argc, char *argv[])
 
   ros::Subscriber desired_speed_sub = n.subscribe("/guidance/desired_speed", 1000, dspeed_callback);
   ros::Subscriber desired_heading_sub = n.subscribe("/guidance/desired_heading", 1000, dheading_callback);
-  ros::Subscriber ins_pose_sub = n.subscribe("/vectornav/ins_2d/NED_pose", 1000, ins_callback);
-  ros::Subscriber local_vel_sub = n.subscribe("/vectornav/ins_2d/local_vel", 1000, vel_callback);
-  //ros::Subscriber odom_sub = n.subscribe("/usv_simulation/boat_model/odom", 1000, odom_callback);
+  //ros::Subscriber ins_pose_sub = n.subscribe("/vectornav/ins_2d/NED_pose", 1000, ins_callback);
+  //ros::Subscriber local_vel_sub = n.subscribe("/vectornav/ins_2d/local_vel", 1000, vel_callback);
+  ros::Subscriber odom_sub = n.subscribe("/usv_simulation/boat_model/odom", 1000, odom_callback);
 
   ros::Rate loop_rate(rate);
 
